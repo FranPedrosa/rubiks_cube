@@ -97,17 +97,40 @@ def rotate_z(d):
                        0.0  ,    0.0, 1.0, 0.0,
                        0.0  ,    0.0, 0.0, 1.0], np.float32)
 
+def scale_transformation():
+    return np.array([scale_p, 0, 0, 0,
+                    0, scale_p, 0, 0,
+                    0, 0, scale_p, 0,
+                    0, 0, 0, 1], np.float32)
+
+def translation_transformation():
+    return np.array([1, 0, 0, t_x,
+                    0, 1, 0, t_y,
+                    0, 0, 1, t_z,
+                    0, 0, 0, 1], np.float32)
+
+#Rotação do cubo
 a_x = 0.0
 a_y = 0.0
 a_z = 0.0
 
+#?
 anim_x = 0.0
 anim_y = 0.0
 anim_z = 0.0
 
+#?
 d_x = 0.0
 d_y = 0.0
 d_z = 0.0
+
+#escala da figura
+scale_p = 1.0
+
+#translation
+t_x = 0.0
+t_y = 0.0
+t_z = 0.0
 
 calback = None
 
@@ -130,6 +153,7 @@ def increment_animation():
 def key_event(window, key, scancode, action, mods):
     global a_x, a_y, a_z
     global d_x
+    global scale_p, t_x, t_y
     global callback
     print(key)
     if action == 1 or action == 2:
@@ -141,6 +165,18 @@ def key_event(window, key, scancode, action, mods):
             a_y += 0.1
         if key == keys.right:
             a_y -= 0.1
+        if key == keys.t_up:
+            t_y += 0.1
+        if key == keys.t_down:
+            t_y -= 0.1
+        if key == keys.t_right:
+            t_x += 0.1
+        if key == keys.t_left:
+            t_x -= 0.1
+        if key == keys.scale_plus:
+            scale_p += 0.1
+        if key == keys.scale_minus:
+            scale_p -= 0.1
         if key == keys.r:
             d_x = 0.01
             callback = magic_cube.move_white()
@@ -161,8 +197,10 @@ while not glfw.window_should_close(window):
 
     loc = glGetUniformLocation(program, "mat_transformation")
     mat_transform = rotate_x(a_x)
-    mat_transform = matrix_multiplication(mat_transform,rotate_y(a_y))
-    mat_transform = matrix_multiplication(mat_transform,rotate_z(a_z))
+    mat_transform = matrix_multiplication(rotate_y(a_y),mat_transform)
+    mat_transform = matrix_multiplication(rotate_z(a_z),mat_transform)
+    mat_transform = matrix_multiplication(translation_transformation(),mat_transform)
+    mat_transform = matrix_multiplication(scale_transformation(),mat_transform)
     glUniformMatrix4fv(loc, 1, GL_TRUE, mat_transform)
     j =0
     i =0
@@ -180,8 +218,9 @@ while not glfw.window_should_close(window):
         j =0
         i =0
         mat_anim = rotate_x(anim_x)
-        mat_anim = matrix_multiplication(mat_transform,rotate_y(anim_y))
-        mat_anim = matrix_multiplication(mat_transform,rotate_z(anim_z))
+        mat_anim = matrix_multiplication(rotate_y(anim_y),mat_transform)
+        mat_anim = matrix_multiplication(rotate_z(anim_z),mat_transform)
+        mat_transform = matrix_multiplication(scale_transformation(),mat_transform)
         glUniformMatrix4fv(loc, 1, GL_TRUE, mat_anim)
         for cube in range(magic_cube.num_cubes):
             for c in magic_cube.cube_colors[i]:
